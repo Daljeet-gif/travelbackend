@@ -2,6 +2,13 @@ import { User } from "../models/User.js";
 import { compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
 // ─── Register ────────────────────────────────────────────────────────────────
 export const registerUser = async (req, res) => {
   try {
@@ -51,12 +58,7 @@ export const loginUser = async (req, res) => {
     );
 
     // Store refresh token in httpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
     res.status(200).json({
       message: "Login successful.",
@@ -102,7 +104,7 @@ export const updateProfile = async (req, res) => {
 export const deleteAccount = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.user.id);
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", refreshCookieOptions);
     res.status(200).json({ message: "Account deleted." });
   } catch (err) {
     res.status(500).json({ message: "Server error.", error: err.message });
@@ -130,6 +132,6 @@ export const refreshAccessToken = (req, res) => {
 
 // ─── Logout ──────────────────────────────────────────────────────────────────
 export const logoutUser = (req, res) => {
-  res.clearCookie("refreshToken");
+  res.clearCookie("refreshToken", refreshCookieOptions);
   res.status(200).json({ message: "Logged out successfully." });
 };

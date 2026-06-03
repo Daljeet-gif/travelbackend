@@ -3,7 +3,7 @@ import {
   registerUser, loginUser, getProfile,
   updateProfile, deleteAccount,
   refreshAccessToken, logoutUser,
-} from "../controllers/userController.js";
+} from "../controllers/usercontroller.js";
 import { authenticate, authorize, authorizeOwnerOrAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
