@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: tripgenie-api
+    runtime: node
+    rootDir: TripGenie
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: FRONTEND_URL
+        value: https://tripgenie-frontend.onrender.com
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: GEOAPIFY_API_KEY
+        sync: false
+      - key: WEATHER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+
+  - type: web
+    name: tripgenie-frontend
+    runtime: static
+    plan: free
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: VITE_API_URL
+        value: https://tripgenie-api.onrender.com/api
+      - key: VITE_GEOAPIFY_KEY
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
